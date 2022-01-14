@@ -233,12 +233,12 @@ def write_html(htmlfile, htmltext, addtext, words, add, cats, refhyp):
             font = "<font color=blue>"
         else:
             closefont = " "
-        htmltxt.write(font+words[nc]+addcat+closefont)
+        htmltext.write(font+words[nc]+addcat+closefont)
 
     if refhyp == "ref":
-        htmltxt.write("\n<br><br><br>\n")
+        htmltext.write("\n<br><br><br>\n")
     elif refhyp == "hyp":
-        htmltxt.write("\n<br><br>\n")
+        htmltext.write("\n<br><br>\n")
 
 
 def main():
@@ -326,7 +326,7 @@ def main():
         nSent += 1
 
         minSentWer = 1000
-        bestWerRefLength = 0.0
+        bestWerRefLength = 0.00000001
         bestWerRefIndex = -1
         bestWerRefErrors = []
         bestWerHypErrors = []
@@ -524,11 +524,17 @@ def main():
             # best (minimum) sentence WER => best reference => best WER errors
 
             sentWerCount = sentSubCount + sentDelCount + sentInsCount
-            sentWer = sentWerCount/len(refWords)
+            if len(refWords) == 0:
+                refLen = 0.00000001
+            else:
+                refLen = len(refWords) 
+
+            sentWer = sentWerCount/refLen
+     
             if sentWer < minSentWer:
                 minSentWer = sentWer
                 bestWerRefIndex = ir
-                bestWerRefLength = len(refWords)
+                bestWerRefLength = refLen
                 bestWerRefErrors = werRefErrors
                 bestWerHypErrors = werHypErrors
                 bestWerRefWords = werRefWords
@@ -588,10 +594,8 @@ def main():
         sentInflRperCount = 0.0
             
         rperErrors, sentRperCount, sentInflRperCount = hyp_ref_errors(hline, basehline, refWords, baseRefWords, "rerr")
-
-        sentRper = sentRperCount/len(refWords)
-        sentInflRper = sentInflRperCount/len(refWords)
-    
+        sentRper = sentRperCount/refLen
+        sentInflRper = sentRperCount/refLen
 
 
         totalHperCount += sentHperCount
@@ -672,7 +676,7 @@ def main():
 
         # write sentence error rates
     
-        if sent:
+        if args.sent:
             wer = 100*minSentWer
             hper = 100*sentHper
             rper = 100*sentRper
@@ -702,40 +706,40 @@ def main():
             rbsumCount = sentInflHperCount + sentMissCount + sentHypLexCount + sentExtCount + sentHypBlockReordCount
             rbsumErr =  iHper + hbRer + missErr + extErr + hLexErr
         
-            write_error_rates(errtxt, str(nSent)+"::Wer: ", bestSentWer, wer)
-            write_error_rates(errtxt, str(nSent)+"::Rper: ", sentRperCount, rper)
-            write_error_rates(errtxt, str(nSent)+"::Hper: ", sentHperCount, hper)
+            write_error_rates(sys.stdout, str(nSent)+"::Wer: ", bestSentWer, wer)
+            write_error_rates(sys.stdout, str(nSent)+"::Rper: ", sentRperCount, rper)
+            write_error_rates(sys.stdout, str(nSent)+"::Hper: ", sentHperCount, hper)
 
-            errtxt.write("\n")
+            sys.stdout.write("\n")
 
-            write_error_rates(errtxt, str(nSent)+"::SUMerr: ", sumCount, sumErr)
-            write_error_rates(errtxt, str(nSent)+"::bSUMerr: ", bsumCount, bsumErr)
-            write_error_rates(errtxt, str(nSent)+"::rbSUMerr: ", rbsumCount, rbsumErr)
+            write_error_rates(sys.stdout, str(nSent)+"::SUMerr: ", sumCount, sumErr)
+            write_error_rates(sys.stdout, str(nSent)+"::bSUMerr: ", bsumCount, bsumErr)
+            write_error_rates(sys.stdout, str(nSent)+"::rbSUMerr: ", rbsumCount, rbsumErr)
         
-            errtxt.write("\n")
+            sys.stdout.write("\n")
 
 
-            write_error_rates(errtxt, str(nSent)+"::refINFer: ", sentInflRperCount, iRper)
-            write_error_rates(errtxt, str(nSent)+"::hypINFer: ", sentInflHperCount, iHper)
-            write_error_rates(errtxt, str(nSent)+"::refRer:   ", sentRefReordCount, rRer)
-            write_error_rates(errtxt, str(nSent)+"::hypRer:   ", sentHypReordCount, hRer)
-            write_error_rates(errtxt, str(nSent)+"::MISer:  ", sentMissCount, missErr)
-            write_error_rates(errtxt, str(nSent)+"::EXTer:  ", sentExtCount, extErr)
-            write_error_rates(errtxt, str(nSent)+"::refLEXer: ", sentRefLexCount, rLexErr)
-            write_error_rates(errtxt, str(nSent)+"::hypLEXer: ", sentHypLexCount, hLexErr)
+            write_error_rates(sys.stdout, str(nSent)+"::refINFer: ", sentInflRperCount, iRper)
+            write_error_rates(sys.stdout, str(nSent)+"::hypINFer: ", sentInflHperCount, iHper)
+            write_error_rates(sys.stdout, str(nSent)+"::refRer:   ", sentRefReordCount, rRer)
+            write_error_rates(sys.stdout, str(nSent)+"::hypRer:   ", sentHypReordCount, hRer)
+            write_error_rates(sys.stdout, str(nSent)+"::MISer:  ", sentMissCount, missErr)
+            write_error_rates(sys.stdout, str(nSent)+"::EXTer:  ", sentExtCount, extErr)
+            write_error_rates(sys.stdout, str(nSent)+"::refLEXer: ", sentRefLexCount, rLexErr)
+            write_error_rates(sys.stdout, str(nSent)+"::hypLEXer: ", sentHypLexCount, hLexErr)
 
-            errtxt.write("\n")
+            sys.stdout.write("\n")
 
-            write_error_rates(errtxt, str(nSent)+"::brefINFer: ", sentBlockInflRperCount, biRper)
-            write_error_rates(errtxt, str(nSent)+"::bhypINFer: ", sentBlockInflHperCount, biHper)
-            write_error_rates(errtxt, str(nSent)+"::brefRer:   ", sentRefBlockReordCount, rbRer)
-            write_error_rates(errtxt, str(nSent)+"::bhypRer:   ", sentHypBlockReordCount, hbRer)
-            write_error_rates(errtxt, str(nSent)+"::bMISer:  ", sentBlockMissCount, bmissErr)
-            write_error_rates(errtxt, str(nSent)+"::bEXTer:  ", sentBlockExtCount, bextErr)
-            write_error_rates(errtxt, str(nSent)+"::brefLEXer: ", sentRefBlockLexCount, rbLexErr)
-            write_error_rates(errtxt, str(nSent)+"::bhypLEXer: ", sentHypBlockLexCount, hbLexErr)
+            write_error_rates(sys.stdout, str(nSent)+"::brefINFer: ", sentBlockInflRperCount, biRper)
+            write_error_rates(sys.stdout, str(nSent)+"::bhypINFer: ", sentBlockInflHperCount, biHper)
+            write_error_rates(sys.stdout, str(nSent)+"::brefRer:   ", sentRefBlockReordCount, rbRer)
+            write_error_rates(sys.stdout, str(nSent)+"::bhypRer:   ", sentHypBlockReordCount, hbRer)
+            write_error_rates(sys.stdout, str(nSent)+"::bMISer:  ", sentBlockMissCount, bmissErr)
+            write_error_rates(sys.stdout, str(nSent)+"::bEXTer:  ", sentBlockExtCount, bextErr)
+            write_error_rates(sys.stdout, str(nSent)+"::brefLEXer: ", sentRefBlockLexCount, rbLexErr)
+            write_error_rates(sys.stdout, str(nSent)+"::bhypLEXer: ", sentHypBlockLexCount, hbLexErr)
 
-            errtxt.write("\n")
+            sys.stdout.write("\n")
 
 
         # write wer, rper and hper words (and additional information, such as POS, etc.)
